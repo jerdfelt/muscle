@@ -1,0 +1,40 @@
+Here are a few tips on what do and what not to do.
+
+Column schema should not change
+-------------------------------
+The schema for a particular column should be considered immutable. Changes
+to a column schema might change the expectations for the code currently
+running.
+
+[FIXME: There are some migrations that should be safe, like adding another
+ value to an ENUM, or even going from INT to VARCHAR. Probably shouldn't
+ be worded this strongly]
+
+Columns cannot non-NULL during expand phase
+-------------------------------------------
+During column renames or modifications, a new column is added and data
+is slowly migrated over to the new column. As a result, some data
+will be NULL until all of the date is migrated over.
+
+[FIXME: It's theoretically possible to handle this transparently. We
+ already have code that needs to do the data migration, it can also
+ ensure that the data returned is never NULL and the migration tool
+ can automatically set the column to non-NULL during the contract phase]
+
+When renaming or modifying a column, always write to old and new columns
+------------------------------------------------------------------------
+If a downgrade needs to occur, then old code is deployed and it will
+be looking at the old column.
+
+[FIXME: A property could handle this transparently]
+
+When downgrading, remove new columns or set the values to NULL
+--------------------------------------------------------------
+If a downgrade occurs, then some rows may have already been migrated.
+When old code runs it will only update the old column. This will cause
+problems when the new code runs again as it thinks some rows have
+already been migrated and will look at old data. A solution is to
+either remove the new column or set all values to NULL, forcing
+rows to be migrated again.
+
+[FIXME: The code could handle this situation as well]

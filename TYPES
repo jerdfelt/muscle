@@ -1,0 +1,20 @@
+Adding a new column
+-------------------
+This is mostly a problem for the SQL storage engine. No data needs to be
+migrated from other columns/tables.
+
+Renaming a column
+-----------------
+A new column should be added during the expand phase. Data should be
+slowly migrated to the new column during reads. The old column should
+be dropped during the contract phase.
+
+Altering column schema
+----------------------
+In some cases, this can be done without any extra work from the
+application. For instance, if changing from a VARCHAR(26) to VARCHAR(255),
+then the application will liekly not need any extra logic to deal with
+that.
+
+For other changes, treat like 'Renaming a column' to ensure that the
+data is semantically moved over.

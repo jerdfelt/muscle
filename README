@@ -1,0 +1,40 @@
+This is a proof of concept module to implement an "expand" and "contract"
+method of database migrations.
+
+There are two main sources of downtime when using traditional migration
+(such as sqlalchemy-migrate or alembic):
+
+1) ALTER TABLE can and often will take a lock on the table for the
+   duration of the operation, which can be long depending on the row count
+2) The length of time it takes to migrate the data after the schema change
+   is done can be long. Such as moving data to new tables, etc
+
+Also, to a lesser extent, the length of time code needs to be stopped
+can cause extra downtime. This is necessary because the old code can
+only use the old schema and the new code can only use the new schema.
+
+This software tackles the latter problem of the length of time it takes
+to migrate the data, not the downtime from the schema change (see below
+for possible solutions).
+
+It tackles the problem by splitting the process into an "expand" phase
+which adds new columns (never modifying existing columns) and then a
+"contract" phase which removes unused columns.
+
+In between the "expand" and "contract", as software reads data from the
+database, the data is migrated to the new columns/tables that have been
+added.
+
+ALTER TABLE downtime
+--------------------
+ALTER TABLE will often cause locks to be obtained for the duration of the
+operation. This can happen even when adding a new column with InnoDB.
+This is a potential source of downtime as the database updates all rows
+with the write lock held.
+
+Possible solutions:
+https://www.facebook.com/notes/mysql-at-facebook/online-schema-change-for-mysql/430801045932
+http://code.google.com/p/openarkkit/
+https://www.percona.com/doc/percona-toolkit/2.1/pt-online-schema-change.html
+Upgrade to MySQL 5.6, which appears to have better code to handle online
+schema changes with minimal downtime
