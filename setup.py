@@ -4,7 +4,7 @@ from setuptools import setup
 
 
 setup(name='muscle',
-      version='0.0.1',
+      version='0.0.2',
       author='Johannes Erdfelt',
       author_email='johannes@erdfelt.com',
       url='https://github.com/jerdfelt/muscle',
